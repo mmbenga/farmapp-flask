@@ -296,17 +296,16 @@ class TransferHistory(db.Model):
 class AuditLog(db.Model):
     __tablename__ = 'audit_logs'
     
-    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    admin = db.relationship('User', backref='audit_logs')
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Fixed table name to 'users'
     action = db.Column(db.String(255))
     table_name = db.Column(db.String(50))
     record_id = db.Column(db.Integer)
     details = db.Column(db.Text, nullable=True)
     ip_address = db.Column(db.String(45))
     
+    # Correct relationship - points to User model
     user = db.relationship('User', back_populates='audit_logs')
 
     def __repr__(self):

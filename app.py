@@ -424,7 +424,8 @@ def audit_logs():
     date_to = request.args.get('date_to')
     action_type = request.args.get('action_type')
 
-    query = AuditLog.query.options(joinedload(AuditLog.admin)).order_by(AuditLog.timestamp.desc())
+    # Use the correct relationship name 'user'
+    query = AuditLog.query.options(joinedload(AuditLog.user)).order_by(AuditLog.timestamp.desc())
 
     if date_from:
         query = query.filter(AuditLog.timestamp >= date_from)
