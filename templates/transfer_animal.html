@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Transfer Animal: {{ animal.name }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('transfer_animal', animal_id=animal.id) }}">
+                <div class="mb-3">
+                    <label for="target_farm" class="form-label">Select Target Farm</label>
+                    <select class="form-select" name="target_farm" id="target_farm" required>
+                        <option value="" disabled selected>-- Select a Farm --</option>
+                        {% for farm in all_farms %}
+                            <option value="{{ farm.id }}">{{ farm.farm_name }} ({{ farm.location }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-warning">
+                    <i class="bi bi-arrow-left-right"></i> Submit Transfer Request
+                </button>
+                <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

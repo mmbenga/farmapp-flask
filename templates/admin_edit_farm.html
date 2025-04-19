@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Edit Farm - {{ farm.farm_name }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.farm_name.label(class="form-label") }}
+                        {{ form.farm_name(class="form-control") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.location.label(class="form-label") }}
+                        {{ form.location(class="form-control") }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.contact_info.label(class="form-label") }}
+                        {{ form.contact_info(class="form-control") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.owner_name.label(class="form-label") }}
+                        {{ form.owner_name(class="form-control") }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.logo.label(class="form-label") }}
+                    {{ form.logo(class="form-control") }}
+                    {% if farm.logo_path %}
+                    <small class="text-muted">Current logo: 
+                        <img src="{{ url_for('serve_logo', filename=farm.logo_path.replace('logos/', '')) }}" 
+                             alt="Current logo" style="max-height: 50px;">
+                    </small>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid gap-2">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('admin_farm_details', farm_id=farm.id) }}" 
+                       class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

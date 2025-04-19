@@ -1,0 +1,87 @@
+<h2>User Management</h2>
+
+<div class="user-creation-form">
+  <h3>Create New User</h3>
+  <form method="POST">
+    <div class="form-group">
+      <label>Username:</label>
+      <input type="text" name="username" required>
+    </div>
+    
+    <div class="form-group">
+      <label>Password:</label>
+      <input type="password" name="password" required>
+    </div>
+    
+    <div class="form-group">
+      <label>Full Name:</label>
+      <input type="text" name="full_name" required>
+    </div>
+    
+    <div class="form-group">
+      <label>Contact Info:</label>
+      <input type="text" name="contact_info" required>
+    </div>
+    
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="is_admin"> Is Administrator
+      </label>
+    </div>
+    
+    <div class="form-group farm-selection" id="farmSelection">
+      <label>Associated Farm:</label>
+      <select name="farm_id">
+        <option value="">Select Farm</option>
+        {% for farm in farms %}
+        <option value="{{ farm.farm_id }}">{{ farm.farm_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <button type="submit">Create User</button>
+  </form>
+</div>
+
+<div class="user-list">
+  <h3>Existing Users</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Full Name</th>
+        <th>Type</th>
+        <th>Farm Association</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.full_name }}</td>
+        <td>{{ 'Administrator' if user.is_admin else 'Farm User' }}</td>
+        <td>
+          {% if user.farm %}
+            {{ user.farm.farm_name }}
+          {% elif not user.is_admin %}
+            <span class="warning">No farm assigned!</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="#" class="btn-edit">Edit</a>
+          <a href="#" class="btn-delete">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  // Show/hide farm selection based on admin checkbox
+  document.querySelector('[name="is_admin"]').addEventListener('change', function(e) {
+    document.getElementById('farmSelection').style.display = 
+      e.target.checked ? 'none' : 'block';
+  });
+</script>

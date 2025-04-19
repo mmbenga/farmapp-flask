@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Audit Logs</h2>
+    
+    <!-- Search Form -->
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="date" name="date_from" class="form-control" 
+                       placeholder="From Date">
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="date_to" class="form-control"
+                       placeholder="To Date">
+            </div>
+            <div class="col-md-3">
+                <select name="action_type" class="form-control">
+                    <option value="">All Actions</option>
+                    <option value="create">Create</option>
+                    <option value="update">Update</option>
+                    <option value="delete">Delete</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Logs Table -->
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Timestamp</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Table</th>
+                <th>Record ID</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs.items %}
+            <tr>
+                <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ log.admin.username if log.admin else 'System' }}</td>
+                <td>{{ log.action_type|title }}</td>
+                <td>{{ log.table_name }}</td>
+                <td>{{ log.record_id }}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" 
+                            data-toggle="modal" 
+                            data-target="#detailsModal{{ log.log_id }}">
+                        View
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination">
+            {% if logs.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ logs.prev_num }}">Previous</a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in logs.iter_pages() %}
+            <li class="page-item {% if page_num == logs.page %}active{% endif %}">
+                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
+            {% endfor %}
+            
+            {% if logs.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ logs.next_num }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<!-- Modals for Details -->
+{% for log in logs.items %}
+<div class="modal fade" id="detailsModal{{ log.log_id }}">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Audit Details</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <pre>{{ log.details|tojson(indent=2) }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <h1 class="mb-4">Welcome to Gam United Breeders Association Farm Registration System</h1>
+        
+        {% if current_user.is_authenticated %}
+            {% if not current_user.is_admin %}
+                <div class="card mt-4">
+                    <div class="card-body">
+                        {% if pending_approval %}
+                            <h4>Your farm application is being reviewed</h4>
+                            <p>Please check back later for updates</p>
+                        {% else %}
+                            <h4>Get started with your farm</h4>
+                            <a href="{{ url_for('register_farm') }}" class="btn btn-primary">
+                                Register Your Farm
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h4>Start your farming journey today</h4>
+                    <a href="{{ url_for('register') }}" class="btn btn-primary me-2">
+                        Register Account
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                        Login
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

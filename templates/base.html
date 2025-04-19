@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUBA Farm Registration System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .auth-status {
+            margin-right: 15px;
+            color: white;
+        }
+        .rules-section {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .rules-section h2 {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+        .rules-section li {
+            font-size: 18px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .rules-section ul {
+            margin-top: 5px;
+            padding-left: 20px;
+        }
+        .rules-section p {
+            font-size: 17px;
+            margin-top: 20px;
+        }
+        .flag-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            animation: float 3s ease-in-out infinite;
+        }
+        .flag-container img {
+            width: 180px;
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+        footer {
+            background-color: #343a40;
+            color: #ffffff;
+            padding: 20px 0;
+            text-align: center;
+            margin-top: 40px;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+        .container.main-content {
+            min-height: 70vh;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="bi bi-house-heart"></i> GUBA Farm Registration
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto align-items-center">
+                    {% if current_user.is_authenticated %}
+                        <span class="auth-status">
+                            <i class="bi bi-person-circle"></i>
+                            {% if current_user.is_admin %}
+                                Admin: {{ current_user.username }}
+                            {% else %}
+                                User: {{ current_user.full_name or current_user.username }}
+                            {% endif %}
+                        </span>
+                        {% if current_user.is_admin %}
+                            <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                                <i class="bi bi-speedometer2"></i> Admin Dashboard
+                            </a>
+                        {% else %}
+                            <a class="nav-link" href="{{ url_for('user_dashboard') }}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        {% endif %}
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    {% else %}
+                        <a class="nav-link" href="{{ url_for('register') }}">
+                            <i class="bi bi-person-plus"></i> Register
+                        </a>
+                        <a class="nav-link" href="{{ url_for('login') }}">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container main-content mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    {% if request.endpoint == 'index' %}
+    <div class="flag-container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/77/Flag_of_The_Gambia.svg" alt="Gambia Flag">
+    </div>
+
+    <div class="container rules-section">
+        <h2><i class="bi bi-card-checklist"></i> Rules and Regulations</h2>
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <ol class="list-group list-group-numbered">
+                    <li class="list-group-item">
+                        The time stamp enterprise camera must be used for registration.
+                        <ul class="mt-2">
+                            <li>Network time, Local time, and Location must be visible.</li>
+                        </ul>
+                    </li>
+                    <li class="list-group-item">
+                        Photograph both sides of the newborn with the timestamp.
+                        <ul class="mt-2">
+                            <li>Ensure both sides are clearly visible.</li>
+                        </ul>
+                    </li>
+                    <li class="list-group-item">
+                        Register the newborn within 24 hours of birth.
+                        <ul class="mt-2">
+                            <li>If the newborn cannot stand, you may support it using your hand.</li>
+                        </ul>
+                    </li>
+                    <li class="list-group-item">
+                        Use the official registration form.
+                        <ul class="mt-2">
+                            <li>The form must be fully completed and signed.</li>
+                        </ul>
+                    </li>
+                    <li class="list-group-item">
+                        A non-refundable registration fee of D100.00 is required.
+                        <ul class="mt-2">
+                            <li>Payment via Wave: +220 3359777</li>
+                        </ul>
+                    </li>
+                    <li class="list-group-item">
+                        Submit both the registration form and timestamped photo together.
+                        <ul class="mt-2">
+                            <li>Sending only one will result in rejection.</li>
+                            <li>Send via WhatsApp: +220 3359777</li>
+                        </ul>
+                    </li>
+                    <li class="list-group-item">
+                        All conditions above must be met to receive a certificate.
+                    </li>
+                </ol>
+                <div class="alert alert-info mt-4">
+                    <p><strong><i class="bi bi-info-circle"></i> Ladoum breeders are encouraged to download the timestamp camera app, and print copies of the registration form to save time. Registration is no longer a dream — it's a reality.</strong></p>
+                    <p class="fw-bold mb-0"><i class="bi bi-calendar-event"></i> Registration starts 1st April, 2025.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <footer class="footer mt-auto py-3">
+        <div class="container">
+            <span class="text-white">&copy; 2025 GUBA Farm and Animal Registration System. All rights reserved.</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    </script>
+</body>
+</html>

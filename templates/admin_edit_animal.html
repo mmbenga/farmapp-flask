@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Edit Animal - {{ animal.name }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.animal_type.label(class="form-label") }}
+                        {{ form.animal_type(class="form-select") }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.gender.label(class="form-label") }}
+                        {{ form.gender(class="form-select") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.dob.label(class="form-label") }}
+                        {{ form.dob(class="form-control", type="date") }}
+                    </div>
+                </div>
+                
+                <!-- Other fields... -->
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.photo1.label(class="form-label") }}
+                        {{ form.photo1(class="form-control") }}
+                        {% if animal.photo1_path %}
+                        <small class="text-muted">Current: {{ animal.photo1_path }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.photo2.label(class="form-label") }}
+                        {{ form.photo2(class="form-control") }}
+                        {% if animal.photo2_path %}
+                        <small class="text-muted">Current: {{ animal.photo2_path }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('admin_farm_details', farm_id=animal.farm_id) }}" 
+                       class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

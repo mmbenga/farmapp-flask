@@ -1,0 +1,15 @@
+<div class="card">
+    <div class="card-body">
+        <!-- Farm table content from previous implementation -->
+        {% if farms.items %}
+        <div class="table-responsive">
+            <table class="table table-striped" id="farmsTable">
+                <!-- Table headers and body -->
+            </table>
+            {{ render_pagination(farms, 'farms_content') }}
+        </div>
+        {% else %}
+        <div class="alert alert-info">No farms found</div>
+        {% endif %}
+    </div>
+</div>

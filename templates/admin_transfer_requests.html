@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Transfer Requests{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">
+        <i class="bi bi-arrow-left-right"></i> Transfer Requests Management
+        <small class="text-muted fs-6">Pending Approvals</small>
+    </h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="bi {% if category == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if transfers %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Animal Details</th>
+                    <th>Farm Transfer</th>
+                    <th>Request Info</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transfer in transfers %}
+                <tr>
+                    <td class="fw-bold">#{{ transfer.id }}</td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <a href="{{ url_for('view_animal', animal_id=transfer.animal.id) }}" class="text-decoration-none">
+                                <span class="fw-bold">{{ transfer.animal.name }}</span>
+                                <small class="text-muted d-block">ID: {{ transfer.animal.id }}</small>
+                                <small class="d-block"><i class="bi bi-tag"></i> {{ transfer.animal.animal_type|title }}</small>
+                            </a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="transfer-path">
+                            <div class="from-farm text-danger">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <a href="{{ url_for('admin_farm_details', farm_id=transfer.from_farm.id) }}" class="text-decoration-none">
+                                    {{ transfer.from_farm.farm_name }}
+                                </a>
+                            </div>
+                            <div class="to-farm text-success mt-2">
+                                <i class="bi bi-box-arrow-in-left"></i>
+                                <a href="{{ url_for('admin_farm_details', farm_id=transfer.to_farm.id) }}" class="text-decoration-none">
+                                    {{ transfer.to_farm.farm_name }}
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span><i class="bi bi-person"></i> {{ transfer.initiator.username }}</span>
+                            <small class="text-muted"><i class="bi bi-calendar"></i> {{ transfer.transfer_date.strftime('%Y-%m-%d %H:%M') }}</small>
+                            {% if transfer.notes %}
+                            <div class="mt-2 p-2 bg-light rounded">
+                                <small><i class="bi bi-chat-left-text"></i> {{ transfer.notes }}</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-{% if transfer.status == 'pending' %}warning{% elif transfer.status == 'approved' %}success{% else %}danger{% endif %}">
+                            {{ transfer.status|upper }}
+                        </span>
+                        {% if transfer.certificate_path %}
+                        <div class="mt-2">
+                            <small class="text-success"><i class="bi bi-file-check"></i> Certificate Generated</small>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column gap-2">
+                            <form method="POST" action="{{ url_for('approve_transfer', transfer_id=transfer.id) }}">
+                                <button type="submit" class="btn btn-success btn-sm w-100" 
+                                        onclick="return confirm('Approve transfer of {{ transfer.animal.name }} to {{ transfer.to_farm.farm_name }}?')">
+                                    <i class="bi bi-check-circle"></i> Approve
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('reject_transfer', transfer_id=transfer.id) }}">
+                                <button type="submit" class="btn btn-danger btn-sm w-100" 
+                                        onclick="return confirm('Reject this transfer request?')">
+                                    <i class="bi bi-x-circle"></i> Reject
+                                </button>
+                            </form>
+                            {% if transfer.certificate_path %}
+                            <a href="{{ url_for('download_certificate', transfer_id=transfer.id) }}" 
+                               class="btn btn-info btn-sm w-100" 
+                               target="_blank">
+                               <i class="bi bi-file-earmark-pdf"></i> Certificate
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> There are no pending transfer requests at the moment.
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+        transform: scale(1.002);
+        transition: all 0.1s ease;
+    }
+    .transfer-path .from-farm::before {
+        content: "→";
+        margin-right: 5px;
+    }
+    .transfer-path .to-farm::before {
+        content: "←";
+        margin-right: 5px;
+    }
+    .badge {
+        font-size: 0.8em;
+        padding: 5px 8px;
+    }
+    .gap-2 {
+        gap: 0.5rem;
+    }
+    .table th {
+        white-space: nowrap;
+    }
+</style>
+{% endblock %}

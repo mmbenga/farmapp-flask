@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Farm Details: {{ farm.farm_name }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h4>Basic Information</h4>
+                    <p><strong>Owner:</strong> {{ farm.owner.full_name }}</p>
+                    <p><strong>Location:</strong> {{ farm.location }}</p>
+                    <p><strong>Contact:</strong> {{ farm.contact_info }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge bg-{% if farm.status == 'approved' %}success{% else %}warning{% endif %}">
+                            {{ farm.status|capitalize }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6 text-center">
+                    {% if farm.logo_path %}
+                        <img src="{{ url_for('serve_logo', filename=farm.logo_path) }}" 
+                             class="img-fluid rounded" 
+                             style="max-height: 200px;" 
+                             alt="Farm Logo">
+                    {% endif %}
+                </div>
+            </div>
+
+            <h4 class="mt-4">Animals ({{ farm.animals|length }})</h4>
+            {% if farm.animals %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Gender</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                                {% if current_user.is_admin %}
+                                    <th>PDF</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for animal in farm.animals %}
+                            <tr>
+                                <td>{{ animal.id }}</td>
+                                <td>{{ animal.name }}</td>
+                                <td>{{ animal.animal_type|capitalize }}</td>
+                                <td>{{ animal.gender|capitalize }}</td>
+                                <td>
+                                    <span class="badge bg-{% if animal.status == 'approved' %}success{% else %}warning{% endif %}">
+                                        {{ animal.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_animal', animal_id=animal.id) }}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                                {% if current_user.is_admin %}
+                                <td>
+                                    <a href="{{ url_for('animal_certificate', animal_id=animal.id) }}" 
+                                        class="btn btn-sm btn-outline-danger">
+                                         <i class="bi bi-file-earmark-pdf"></i> PDF
+                                       </a>
+                                    </a>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No animals registered for this farm yet.
+                </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

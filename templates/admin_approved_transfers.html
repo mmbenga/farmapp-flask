@@ -1,0 +1,87 @@
+{% extends "admin_layout.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Approved Transfer History</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    {% if transfers %}
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="approvedTransfersTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Animal</th>
+                            <th>From Farm</th>
+                            <th>To Farm</th>
+                            <th>Requested By</th>
+                            <th>Approved By</th>
+                            <th>Transfer Date</th>
+                            <th>Approval Date</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transfer in transfers %}
+                        <tr>
+                            <td>{{ transfer.id }}</td>
+                            <td>
+                                <a href="{{ url_for('view_animal', animal_id=transfer.animal.id) }}">
+                                    {{ transfer.animal.name }} ({{ transfer.animal.animal_type }})
+                                </a>
+                            </td>
+                            <td>{{ transfer.from_farm.farm_name }}</td>
+                            <td>{{ transfer.to_farm.farm_name }}</td>
+                            <td>{{ transfer.initiator.full_name }}</td>
+                            <td>{{ transfer.approver.full_name if transfer.approver else 'System' }}</td>
+                            <td>{{ transfer.transfer_date|datetimeformat }}</td>
+                            <td>{{ transfer.approval_date|datetimeformat if transfer.approval_date else '-' }}</td>
+                            <td>
+                                <span class="badge badge-success">{{ transfer.status }}</span>
+                            </td>
+                            <td>{{ transfer.notes or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No approved transfers found.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+$(document).ready(function() {
+    $('#approvedTransfersTable').DataTable({
+        responsive: true,
+        order: [[7, 'desc']],  // Sort by approval date descending
+        columnDefs: [
+            { targets: [0], visible: false },  // Hide ID column
+            { targets: [1,2,3,4,5,6,7,8,9], orderable: true }
+        ]
+    });
+});
+</script>
+{% endblock %}

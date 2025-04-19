@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-danger">
+        <h1>403 Forbidden</h1>
+        <p>You don't have permission to access this page.</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+        {% else %}
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Return Home</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

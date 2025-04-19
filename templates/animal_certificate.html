@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Animal Birth Certificate</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 28px;
+            color: #2C3E50;
+        }
+        .header h3 {
+            font-size: 20px;
+            color: #34495E;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        .details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .details table, .details th, .details td {
+            border: 1px solid #ddd;
+        }
+        .details th, .details td {
+            padding: 8px;
+            text-align: left;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Animal Birth Certificate</h1>
+    <h3>Farm: {{ farm.farm_name }}</h3>
+</div>
+
+<div class="details">
+    <h4>Animal Information</h4>
+    <table>
+        <tr>
+            <th>ID</th>
+            <td>{{ animal.animal_id }}</td>
+        </tr>
+        <tr>
+            <th>Name</th>
+            <td>{{ animal.animal_name }}</td>
+        </tr>
+        <tr>
+            <th>Farm</th>
+            <td>{{ farm.farm_name }}</td>
+        </tr>
+        <tr>
+            <th>Date of Birth</th>
+            <td>
+                {% if animal.dob %}
+                    {{ animal.dob.strftime('%Y-%m-%d') }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Color</th>
+            <td>{{ animal.dress_color }}</td>
+        </tr>
+        <tr>
+            <th>Gender</th>
+            <td>{{ animal.gender }}</td>
+        </tr>
+        <tr>
+            <th>Breed</th>
+            <td>{{ animal.breed }}</td>
+        </tr>
+    </table>
+</div>
+
+<div class="footer">
+    <p>This document is issued by the Farm Registration System.</p>
+</div>
+
+</body>
+</html>

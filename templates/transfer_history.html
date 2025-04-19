@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Transfer History</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Animal</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transfer in transfers %}
+            <tr>
+                <td>{{ transfer.animal.name }}</td>
+                <td>{{ transfer.from_farm.farm_name }}</td>
+                <td>{{ transfer.to_farm.farm_name }}</td>
+                <td>
+                    <span class="badge bg-{{ 'success' if transfer.status=='approved' else 'warning' }}">
+                        {{ transfer.status }}
+                    </span>
+                </td>
+                <td>{{ transfer.transfer_date.strftime('%Y-%m-%d') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

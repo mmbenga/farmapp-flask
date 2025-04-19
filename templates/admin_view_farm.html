@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Farm Details: {{ farm.farm_name }}</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Farm Information</h4>
+            <ul>
+                <li><strong>Owner:</strong> {{ farm.owner.full_name }}</li>
+                <li><strong>Location:</strong> {{ farm.location }}</li>
+                <li><strong>Status:</strong> 
+                    <span class="badge 
+                        {% if farm.status == 'approved' %}bg-success
+                        {% elif farm.status == 'pending' %}bg-warning text-dark
+                        {% else %}bg-danger{% endif %}">
+                        {{ farm.status }}
+                    </span>
+                </li>
+            </ul>
+
+            {% if farm.logo_path %}
+            <h5>Farm Logo</h5>
+            <img src="{{ url_for('static', filename=farm.logo_path.replace('\\', '/')) }}" alt="{{ farm.farm_name }} Logo" class="img-fluid">
+            {% else %}
+            <p>No logo available</p>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <h4>Animals Registered</h4>
+            <ul>
+                {% for animal in farm.animals %}
+                <li>{{ animal.name }} ({{ animal.type }})</li>
+                {% else %}
+                <li>No animals registered yet</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Animal Name</h2>
+    <p>Current Name: {{ animal.name }}</p>
+    <p>Farm: {{ animal.farm.farm_name }}</p>
+    
+    <form method="POST" action="{{ url_for('admin_edit_animal_name', animal_id=animal.animal_id) }}">
+        <div class="form-group">
+            <label for="new_name">New Name:</label>
+            <input type="text" class="form-control" id="new_name" name="new_name" 
+                   value="{{ animal.name }}" required>
+        </div>
+        
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Update Name</button>
+            <a href="{{ url_for('admin_farm_details', farm_id=animal.farm_id) }}" 
+               class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

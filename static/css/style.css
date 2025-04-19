@@ -1,0 +1,87 @@
+/* Add to your existing CSS */
+.animal-photo {
+    max-height: 300px;
+    object-fit: contain;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.dl-horizontal dt {
+    float: left;
+    width: 160px;
+    overflow: hidden;
+    clear: left;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dl-horizontal dd {
+    margin-left: 180px;
+}
+
+/* Add to the existing style section */
+#farmSelection {
+    transition: all 0.3s ease;
+}
+.user-table tr td {
+    vertical-align: middle;
+}
+.form-check-label {
+    user-select: none;
+}
+
+.dashboard-section {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.scroll-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.farm-item {
+    padding: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.farm-item:hover {
+    background-color: #f8f9fa;
+}
+
+.no-items {
+    color: #6c757d;
+    padding: 28px;
+    text-align: center;
+}
+
+@keyframes waveFlag {
+  0% { transform: rotate(0deg) translateX(0); }
+  25% { transform: rotate(1deg) translateX(3px); }
+  50% { transform: rotate(0deg) translateX(0); }
+  75% { transform: rotate(-1deg) translateX(-3px); }
+  100% { transform: rotate(0deg) translateX(0); }
+}
+
+.gambia-flag-container {
+  text-align: center;
+  margin: 40px 0 30px;
+}
+
+.gambia-flag-container img {
+  height: 120px;
+  transition: transform 0.5s ease-in-out;
+  animation: waveFlag 3s infinite ease-in-out;
+  border-radius: 6px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}

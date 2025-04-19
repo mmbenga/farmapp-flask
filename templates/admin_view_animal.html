@@ -1,0 +1,50 @@
+<!-- templates/admin_view_animal.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2>Animal Details (Admin View)</h2>
+            <h3>{{ animal.name }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Farm:</strong> {{ farm.farm_name }}</p>
+                    <p><strong>Owner:</strong> {{ farm.owner.full_name }}</p>
+                    <p><strong>Type:</strong> {{ animal.animal_type }}</p>
+                    <p><strong>Gender:</strong> {{ animal.gender }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Date of Birth:</strong> {{ animal.dob.strftime('%Y-%m-%d') if animal.dob else 'N/A' }}</p>
+                    <p><strong>Color:</strong> {{ animal.dress_color or 'N/A' }}</p>
+                    <p><strong>Father Lineage:</strong> {{ animal.father_lineage or 'N/A' }}</p>
+                    <p><strong>Mother Lineage:</strong> {{ animal.mother_lineage or 'N/A' }}</p>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                {% if photo1_url %}
+                <div class="col-md-6">
+                    <h4>Side View Photo</h4>
+                    <img src="{{ photo1_url }}" class="img-fluid rounded">
+                </div>
+                {% endif %}
+                
+                {% if photo2_url %}
+                <div class="col-md-6">
+                    <h4>Front View Photo</h4>
+                    <img src="{{ photo2_url }}" class="img-fluid rounded">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                Back to Admin Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

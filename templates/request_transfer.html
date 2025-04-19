@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Request Animal Transfer</h2>
+<form method="POST">
+    <div class="form-group">
+        <label>Animal: {{ animal.name }} ({{ animal.animal_type }})</label>
+    </div>
+    <div class="form-group">
+        <label>Current Farm: {{ current_farm.farm_name }}</label>
+    </div>
+    <div class="form-group">
+        <label for="to_farm_id">Transfer To:</label>
+        <select class="form-control" id="to_farm_id" name="to_farm_id" required>
+            {% for farm in farms %}
+            <option value="{{ farm.id }}">{{ farm.farm_name }} ({{ farm.location }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="notes">Notes:</label>
+        <textarea class="form-control" id="notes" name="notes"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Request</button>
+</form>
+{% endblock %}

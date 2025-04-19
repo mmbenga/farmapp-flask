@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Confirm Transfer Approval</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            Transfer Details
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Animal:</dt>
+                <dd class="col-sm-9">{{ transfer.animal.name }}</dd>
+                
+                <dt class="col-sm-3">From Farm:</dt>
+                <dd class="col-sm-9">{{ transfer.from_farm.farm_name }}</dd>
+                
+                <dt class="col-sm-3">To Farm:</dt>
+                <dd class="col-sm-9">{{ transfer.to_farm.farm_name }}</dd>
+                
+                <dt class="col-sm-3">Requested By:</dt>
+                <dd class="col-sm-9">{{ transfer.initiator.full_name }}</dd>
+                
+                <dt class="col-sm-3">Request Date:</dt>
+                <dd class="col-sm-9">{{ transfer.transfer_date.strftime('%Y-%m-%d %H:%M') }}</dd>
+            </dl>
+            
+            <form method="POST">
+                <button type="submit" class="btn btn-primary">Confirm Approval</button>
+                <a href="{{ url_for('view_transfer_requests') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

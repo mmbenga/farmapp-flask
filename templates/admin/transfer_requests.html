@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Pending Transfer Requests</h2>
+    
+    {% if not transfers %}
+        <div class="alert alert-info">No pending transfer requests</div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Animal</th>
+                        <th>From Farm</th>
+                        <th>To Farm</th>
+                        <th>Requested By</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transfer in transfers %}
+                    <tr>
+                        <td>{{ transfer.animal.name }}</td>
+                        <td>{{ transfer.from_farm.farm_name }}</td>
+                        <td>{{ transfer.to_farm.farm_name }}</td>
+                        <td>{{ transfer.initiator.full_name }}</td>
+                        <td>{{ transfer.transfer_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('approve_transfer', transfer_id=transfer.id) }}" style="display: inline;">
+                                {# Uncomment the next line if using CSRF protection with Flask-WTF #}
+                                {# {{ csrf_token() }} #}
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('reject_transfer', transfer_id=transfer.id) }}" style="display: inline; margin-left: 5px;">
+                                {# {{ csrf_token() }} #}
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Users</h2>
+<table border="1">
+  <tr>
+    <th>ID</th>
+    <th>Username</th>
+    <th>Admin</th>
+    <th>Actions</th>
+  </tr>
+  {% for user in users %}
+  <tr>
+    <td>{{ user.user_id }}</td>
+    <td>{{ user.username }}</td>
+    <td>{{ 'Yes' if user.is_admin else 'No' }}</td>
+    <td><a href="{{ url_for('main.edit_user', user_id=user.user_id) }}">Edit</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

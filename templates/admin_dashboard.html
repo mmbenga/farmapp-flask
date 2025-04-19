@@ -1,0 +1,555 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="my-4">Admin Dashboard</h2>
+    
+    <!-- Dashboard Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Farms</h5>
+                    <p class="card-text display-6">{{ farm_stats.total }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Farms</h5>
+                    <p class="card-text display-6">{{ farm_stats.pending }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Animals</h5>
+                    <p class="card-text display-6">{{ animal_stats.pending }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Active Users</h5>
+                    <p class="card-text display-6">{{ user_stats.active }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0"><i class="bi bi-people-fill"></i> User Management</h3>
+            <span class="badge bg-light text-dark">{{ user_stats.active }} users</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Role</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in all_users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.full_name or '-' }}</td>
+                            <td>
+                                {% if user.is_admin %}
+                                <span class="badge bg-danger">Admin</span>
+                                {% else %}
+                                <span class="badge bg-primary">User</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.last_login %}
+                                {{ user.last_login.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                Never
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('admin_reset_password', user_id=user.id) }}" 
+                                       class="btn btn-sm btn-warning"
+                                       title="Reset Password">
+                                       <i class="bi bi-key"></i>
+                                    </a>
+                                    <a href="{{ url_for('edit_user', user_id=user.id) }}" 
+                                       class="btn btn-sm btn-primary"
+                                       title="Edit User">
+                                       <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% if not user.is_admin %}
+                                    <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" 
+                                          class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete User">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Approvals Section -->
+    <div class="row">
+        <!-- Pending Farms -->
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Pending Farm Approvals</h3>
+                    <span class="badge bg-light text-dark">{{ pending_farms|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if pending_farms %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Farm Name</th>
+                                        <th>Owner</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for farm in pending_farms %}
+                                    <tr>
+                                        <td>{{ farm.farm_name }}</td>
+                                        <td>{{ farm.owner.full_name }}</td>
+                                        <td>{{ farm.created_at|datetimeformat }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" data-bs-target="#farmModal{{ farm.id }}">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                                <a href="{{ url_for('approve_farm', farm_id=farm.id) }}" 
+                                                   class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-check-circle"></i> Approve
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" data-bs-target="#rejectFarmModal{{ farm.id }}">
+                                                    <i class="bi bi-x-circle"></i> Reject
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Farm Details Modal -->
+                                    <div class="modal fade" id="farmModal{{ farm.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Farm Details: {{ farm.farm_name }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <p><strong>Owner:</strong> {{ farm.owner.full_name }}</p>
+                                                            <p><strong>Location:</strong> {{ farm.location }}</p>
+                                                            <p><strong>Contact:</strong> {{ farm.contact_info }}</p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p><strong>Status:</strong> {{ farm.status }}</p>
+                                                            <p><strong>Created At:</strong> {{ farm.created_at|datetimeformat }}</p>
+                                                            {% if farm.logo_url %}
+                                                            <p><strong>Logo:</strong> 
+                                                                <img src="{{ farm.logo_url }}" alt="{{ farm.farm_name }} logo" style="max-height: 50px;">
+                                                            </p>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <a href="{{ url_for('admin_edit_farm', farm_id=farm.id) }}" class="btn btn-primary">
+                                                        <i class="bi bi-pencil"></i> Edit Farm
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Reject Farm Modal -->
+                                    <div class="modal fade" id="rejectFarmModal{{ farm.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title">Reject Farm Application</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ url_for('reject_farm', farm_id=farm.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <p>You are about to reject {{ farm.farm_name }}'s application.</p>
+                                                        <div class="mb-3">
+                                                            <label for="rejectReason{{ farm.id }}" class="form-label">Reason for rejection (optional):</label>
+                                                            <textarea class="form-control" id="rejectReason{{ farm.id }}" name="reject_reason" rows="3"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">No farms pending approval</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Animals -->
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Pending Animal Registrations</h3>
+                    <span class="badge bg-light text-dark">{{ pending_animals|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if pending_animals %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Farm</th>
+                                        <th>Owner</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for animal in pending_animals %}
+                                    <tr>
+                                        <td>{{ animal.name }}</td>
+                                        <td>{{ animal.animal_type|capitalize }}</td>
+                                        <td>{{ animal.farm.farm_name }}</td>
+                                        <td>{{ animal.farm.owner.full_name }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" data-bs-target="#animalModal{{ animal.id }}">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                                <a href="{{ url_for('approve_animal', animal_id=animal.id) }}" 
+                                                   class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-check-circle"></i> Approve
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" data-bs-target="#rejectAnimalModal{{ animal.id }}">
+                                                    <i class="bi bi-x-circle"></i> Reject
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Animal Details Modal with PDF Button -->
+                                    <div class="modal fade" id="animalModal{{ animal.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Animal Details: {{ animal.name }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <p><strong>Type:</strong> {{ animal.animal_type|capitalize }}</p>
+                                                            <p><strong>Gender:</strong> {{ animal.gender|capitalize }}</p>
+                                                            <p><strong>Farm:</strong> {{ animal.farm.farm_name }}</p>
+                                                            <p><strong>Owner:</strong> {{ animal.farm.owner.full_name }}</p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p><strong>Status:</strong> <span class="badge bg-warning">{{ animal.status|capitalize }}</span></p>
+                                                            <p><strong>Registration Date:</strong> {{ animal.registration_date|datetimeformat }}</p>
+                                                            {% if animal.dob %}
+                                                            <p><strong>Date of Birth:</strong> {{ animal.dob|dateformat }}</p>
+                                                            <p><strong>Age:</strong> {{ animal.dob|calculate_age }}</p>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    {% if animal.photo1_path or animal.photo2_path %}
+                                                    <hr>
+                                                    <div class="row">
+                                                        {% if animal.photo1_path %}
+                                                        <div class="col-md-6">
+                                                            <p><strong>Photo 1:</strong></p>
+                                                            <img src="{{ url_for('uploaded_file', filename=animal.photo1_path) }}" class="img-fluid" alt="{{ animal.name }} photo 1">
+                                                        </div>
+                                                        {% endif %}
+                                                        {% if animal.photo2_path %}
+                                                        <div class="col-md-6">
+                                                            <p><strong>Photo 2:</strong></p>
+                                                            <img src="{{ url_for('uploaded_file', filename=animal.photo2_path) }}" class="img-fluid" alt="{{ animal.name }} photo 2">
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <a href="{{ url_for('admin_edit_animal', animal_id=animal.id) }}" class="btn btn-primary">
+                                                        <i class="bi bi-pencil"></i> Edit Animal
+                                                    </a>
+                                                    {% if animal.status == 'approved' %}
+                                                    <a href="{{ url_for('animal.generate_pdf', animal_id=animal.id) }}" class="btn btn-success">
+                                                        <i class="bi bi-file-earmark-pdf"></i> Generate PDF
+                                                    </a>
+                                                    {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Reject Animal Modal -->
+                                    <div class="modal fade" id="rejectAnimalModal{{ animal.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title">Reject Animal Registration</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ url_for('reject_animal', animal_id=animal.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <p>You are about to reject {{ animal.name }}'s registration.</p>
+                                                        <div class="mb-3">
+                                                            <label for="rejectReason{{ animal.id }}" class="form-label">Reason for rejection (optional):</label>
+                                                            <textarea class="form-control" id="rejectReason{{ animal.id }}" name="reject_reason" rows="3"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">No animals pending approval</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approved Farms Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Approved Farms</h3>
+            <div>
+                <span class="badge bg-light text-dark">{{ approved_farms|length }} farms</span>
+                <a href="{{ url_for('view_transfer_requests') }}" class="btn btn-sm btn-outline-light ms-2">
+                    <i class="bi bi-arrow-left-right"></i> Transfer Requests
+                </a>
+                <button class="btn btn-sm btn-light ms-2" data-bs-toggle="collapse" data-bs-target="#farmsCollapse">
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body collapse show" id="farmsCollapse">
+            {% if approved_farms %}
+                <div class="table-responsive">
+                    <table class="table table-hover" id="approvedFarmsTable">
+                        <thead>
+                            <tr>
+                                <th>Farm Name</th>
+                                <th>Owner</th>
+                                <th>Location</th>
+                                <th>Animals</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for farm in approved_farms %}
+                            <tr>
+                                <td>{{ farm.farm_name }}</td>
+                                <td>{{ farm.owner.full_name }}</td>
+                                <td>{{ farm.location }}</td>
+                                <td>{{ farm.animals|length }}</td>
+                                <td>
+                                    <span class="badge bg-success">{{ farm.status }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin_farm_details', farm_id=farm.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-info-circle"></i> Details
+                                        </a>
+                                        <a href="{{ url_for('admin_edit_farm', farm_id=farm.id) }}" 
+                                           class="btn btn-sm btn-outline-warning">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" 
+                                            data-bs-target="#deactivateFarmModal{{ farm.id }}">
+                                            <i class="bi bi-slash-circle"></i> Deactivate
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <!-- Deactivate Farm Modal -->
+                            <div class="modal fade" id="deactivateFarmModal{{ farm.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-warning text-white">
+                                            <h5 class="modal-title">Deactivate Farm</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form action="{{ url_for('deactivate_farm', farm_id=farm.id) }}" method="POST">
+                                            <div class="modal-body">
+                                                <p>You are about to deactivate {{ farm.farm_name }}.</p>
+                                                <div class="mb-3">
+                                                    <label for="deactivateReason{{ farm.id }}" class="form-label">Reason (optional):</label>
+                                                    <textarea class="form-control" id="deactivateReason{{ farm.id }}" name="deactivate_reason" rows="3"></textarea>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="notifyOwner{{ farm.id }}" name="notify_owner" checked>
+                                                    <label class="form-check-label" for="notifyOwner{{ farm.id }}">
+                                                        Notify farm owner via email
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-warning">Confirm Deactivation</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info mb-0">No approved farms yet</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Activity Section -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h3 class="mb-0"><i class="bi bi-clock-history"></i> Recent Activity</h3>
+        </div>
+        <div class="card-body">
+            <div class="activity-feed">
+                {% if recent_activities %}
+                    {% for activity in recent_activities %}
+                    <div class="activity-item mb-3 pb-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ activity.action }}</strong>
+                                {% if activity.details %}
+                                <div class="text-muted small mt-1">{{ activity.details }}</div>
+                                {% endif %}
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-person"></i> {{ activity.user.full_name if activity.user else 'System' }}
+                                </div>
+                            </div>
+                            <div class="text-muted small text-nowrap ms-3">
+                                <i class="bi bi-calendar"></i> {{ activity.timestamp|datetimeformat('%Y-%m-%d %H:%M') }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('admin_audit_logs') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-list-ul"></i> View Full Activity Log
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> No recent activities found
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTables with better configuration
+    $('#usersTable, #approvedFarmsTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search...",
+            emptyTable: "No data available",
+            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+            infoEmpty: "Showing 0 to 0 of 0 entries",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        },
+        dom: '<"top"f>rt<"bottom"lip><"clear">'
+    });
+
+    // Enable tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip({
+        trigger: 'hover',
+        placement: 'top'
+    });
+
+    // Auto-refresh dashboard every 5 minutes
+    const refreshInterval = setInterval(function() {
+        window.location.reload();
+    }, 300000);
+
+    // Clean up interval when leaving page
+    $(window).on('beforeunload', function() {
+        clearInterval(refreshInterval);
+    });
+});
+</script>
+{% endblock %}
