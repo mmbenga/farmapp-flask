@@ -296,6 +296,8 @@ class TransferHistory(db.Model):
 class AuditLog(db.Model):
     __tablename__ = 'audit_logs'
     
+    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    admin = db.relationship('User', backref='audit_logs')
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
