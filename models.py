@@ -9,6 +9,7 @@ import os
 import logging
 from datetime import datetime, timezone
 from sqlalchemy import event
+from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
 logger = logging.getLogger(__name__)
@@ -304,7 +305,6 @@ class AuditLog(db.Model):
     details = db.Column(db.Text, nullable=True)
     ip_address = db.Column(db.String(45))
     
-    # Relationship to User (removed duplicate admin relationship)
     user = db.relationship('User', back_populates='audit_logs')
 
     def __repr__(self):

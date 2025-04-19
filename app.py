@@ -47,8 +47,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle)
 from reportlab.lib.units import inch
 from utils import generate_transfer_certificate
-from pathlib import Path
-from sqlalchemy.orm import joinedload, subqueryload, selectinload
 
 
 
@@ -418,24 +416,29 @@ def register():
 
 @app.route('/admin/audit_logs')
 @admin_required
-def audit_logs():
-    page = request.args.get('page', 1, type=int)
-    date_from = request.args.get('date_from')
-    date_to = request.args.get('date_to')
-    action_type = request.args.get('action_type')
-
-    # Use the correct relationship name 'user'
-    query = AuditLog.query.options(joinedload(AuditLog.user)).order_by(AuditLog.timestamp.desc())
-
-    if date_from:
-        query = query.filter(AuditLog.timestamp >= date_from)
-    if date_to:
-        query = query.filter(AuditLog.timestamp <= date_to)
-    if action_type:
-        query = query.filter_by(action_type=action_type)
-
-    logs = query.paginate(page=page, per_page=10, error_out=False)
-    return render_template('audit_logs.html', logs=logs)
+def admin_audit_logs():
+    try:
+        page = request.args.get('page', 1, type=int)
+        logs = AuditLog.query.options(
+            db.joinedload(AuditLog.user)
+        ).order_by(AuditLog.timestamp.desc()).paginate(
+            page=page, 
+            per_page=20,
+            error_out=False
+        )
+        
+        # Handle case where logs might be empty
+        if not logs.items:
+            flash('No audit logs found', 'info')
+        
+        return render_template('admin/audit_logs.html', 
+                            logs=logs,
+                            current_time=datetime.now(timezone.utc))
+        
+    except Exception as e:
+        current_app.logger.error(f"Error accessing audit logs: {str(e)}", exc_info=True)
+        flash('Error loading audit logs', 'error')
+        return redirect(url_for('admin_dashboard'))
 
 @app.route('/api/audit_logs')
 def api_audit_logs():
