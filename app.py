@@ -47,6 +47,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle)
 from reportlab.lib.units import inch
 from utils import generate_transfer_certificate
+from pathlib import Path
 
 
 
@@ -414,25 +415,45 @@ def register():
     
     return render_template('register.html')
 
+from sqlalchemy.orm import joinedload
+from datetime import datetime
+
 @app.route('/admin/audit_logs')
 @admin_required
 def audit_logs():
-    page = request.args.get('page', 1, type=int)
-    date_from = request.args.get('date_from')
-    date_to = request.args.get('date_to')
-    action_type = request.args.get('action_type')
+    try:
+        page = request.args.get('page', 1, type=int)
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        action_type = request.args.get('action_type')
 
-    query = AuditLog.query.options(joinedload(AuditLog.admin)).order_by(AuditLog.timestamp.desc())
+        query = AuditLog.query.options(joinedload(AuditLog.admin)).order_by(AuditLog.timestamp.desc())
 
-    if date_from:
-        query = query.filter(AuditLog.timestamp >= date_from)
-    if date_to:
-        query = query.filter(AuditLog.timestamp <= date_to)
-    if action_type:
-        query = query.filter_by(action_type=action_type)
+        # Date filtering
+        if date_from:
+            try:
+                date_from = datetime.strptime(date_from, '%Y-%m-%d')
+                query = query.filter(AuditLog.timestamp >= date_from)
+            except ValueError:
+                flash('Invalid start date format. Use YYYY-MM-DD', 'error')
+        
+        if date_to:
+            try:
+                date_to = datetime.strptime(date_to, '%Y-%m-%d')
+                query = query.filter(AuditLog.timestamp <= date_to)
+            except ValueError:
+                flash('Invalid end date format. Use YYYY-MM-DD', 'error')
 
-    logs = query.paginate(page=page, per_page=10)
-    return render_template('audit_logs.html', logs=logs)
+        if action_type:
+            query = query.filter_by(action_type=action_type)
+
+        logs = query.paginate(page=page, per_page=10, error_out=False)
+        return render_template('audit_logs.html', logs=logs)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error loading audit logs: {str(e)}")
+        flash('Error loading audit logs', 'error')
+        return redirect(url_for('admin_dashboard'))
 
 @app.route('/api/audit_logs')
 def api_audit_logs():
