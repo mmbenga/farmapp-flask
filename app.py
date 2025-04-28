@@ -47,6 +47,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle)
 from reportlab.lib.units import inch
 from utils import generate_transfer_certificate
+from flask import Flask
 
 
 
@@ -286,6 +287,10 @@ def create_test_transfer(animal_id):
 def index():
     if not current_user.is_authenticated:
         return render_template('index.html')
+
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
     
     # For authenticated users
     if current_user.is_admin:
@@ -1801,4 +1806,4 @@ def some_action():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run()
