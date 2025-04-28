@@ -518,9 +518,7 @@ for animal in animals:
             'dob': animal['dob'].isoformat() if animal['dob'] else None,
             'details_url': urljoin(base_url, f'/view_animal/{animal["animal_id"]}'),
             'photos': [
-                urljoin(base_url, f'/uploads/{photo_path.replace("\\", "/")}') if photo_path else None
-                for photo_path in [animal['photo1_path'], animal['photo2_path']]
-                if photo_path
+               urljoin(base_url, f'/uploads/{photo_path.replace("\\\\", "/")}')
             ]
         }
         animals_data.append(animal_data)
