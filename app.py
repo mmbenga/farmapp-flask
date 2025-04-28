@@ -48,6 +48,8 @@ from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Image, Tab
 from reportlab.lib.units import inch
 from utils import generate_transfer_certificate
 from flask import Flask
+from pathlib import Path
+
 
 
 
