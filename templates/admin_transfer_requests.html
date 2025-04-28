@@ -21,7 +21,7 @@
       {% endif %}
     {% endwith %}
 
-    {% if transfers %}
+    {% if pending_transfers %}
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover align-middle">
             <thead class="table-dark">
@@ -35,7 +35,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for transfer in transfers %}
+                {% for transfer in pending_transfers %}
                 <tr>
                     <td class="fw-bold">#{{ transfer.id }}</td>
                     <td>
@@ -75,14 +75,9 @@
                         </div>
                     </td>
                     <td>
-                        <span class="badge bg-{% if transfer.status == 'pending' %}warning{% elif transfer.status == 'approved' %}success{% else %}danger{% endif %}">
+                        <span class="badge bg-warning">
                             {{ transfer.status|upper }}
                         </span>
-                        {% if transfer.certificate_path %}
-                        <div class="mt-2">
-                            <small class="text-success"><i class="bi bi-file-check"></i> Certificate Generated</small>
-                        </div>
-                        {% endif %}
                     </td>
                     <td>
                         <div class="d-flex flex-column gap-2">
@@ -98,13 +93,6 @@
                                     <i class="bi bi-x-circle"></i> Reject
                                 </button>
                             </form>
-                            {% if transfer.certificate_path %}
-                            <a href="{{ url_for('download_certificate', transfer_id=transfer.id) }}" 
-                               class="btn btn-info btn-sm w-100" 
-                               target="_blank">
-                               <i class="bi bi-file-earmark-pdf"></i> Certificate
-                            </a>
-                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -117,6 +105,69 @@
         <i class="bi bi-info-circle"></i> There are no pending transfer requests at the moment.
     </div>
     {% endif %}
+
+    <!-- TRANSFER HISTORY SECTION -->
+    <hr class="my-5">
+
+    <h2 class="mb-4">
+        <i class="bi bi-clock-history"></i> Transfer History
+        <small class="text-muted fs-6">Previously Processed</small>
+    </h2>
+
+    {% if history_transfers %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Animal</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Status</th>
+                    <th>Approved By</th>
+                    <th>Date</th>
+                    <th>Certificate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transfer in history_transfers %}
+                <tr>
+                    <td>#{{ transfer.id }}</td>
+                    <td>
+                        <a href="{{ url_for('view_animal', animal_id=transfer.animal.id) }}">
+                            {{ transfer.animal.name }}
+                        </a>
+                    </td>
+                    <td>{{ transfer.from_farm.farm_name }}</td>
+                    <td>{{ transfer.to_farm.farm_name }}</td>
+                    <td>
+                        <span class="badge bg-{% if transfer.status == 'approved' %}success{% else %}danger{% endif %}">
+                            {{ transfer.status|upper }}
+                        </span>
+                    </td>
+                    <td>{{ transfer.approver.username if transfer.approver else '—' }}</td>
+                    <td>{{ transfer.approval_date.strftime('%Y-%m-%d %H:%M') if transfer.approval_date else '—' }}</td>
+                    <td>
+                        {% if transfer.status == 'approved' %}
+                        <a href="{{ url_for('download_certificate', transfer_id=transfer.id) }}"
+                           class="btn btn-outline-danger btn-sm" target="_blank">
+                            <i class="bi bi-printer-fill"></i> Print PDF
+                        </a>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-secondary">
+        <i class="bi bi-hourglass-split"></i> No previous transfers found.
+    </div>
+    {% endif %}
+
 </div>
 
 <style>

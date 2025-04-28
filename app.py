@@ -1029,8 +1029,15 @@ def admin_reject_transfer(animal_id):
 @login_required
 @admin_required
 def view_transfer_requests():
-    pending_transfers = TransferHistory.query.filter_by(status='pending').order_by(TransferHistory.id.desc()).all()
-    return render_template('admin_transfer_requests.html', transfers=pending_transfers)
+    pending_transfers = TransferHistory.query.filter_by(status='pending') \
+        .order_by(TransferHistory.id.desc()).all()
+
+    history_transfers = TransferHistory.query.filter(TransferHistory.status != 'pending') \
+        .order_by(TransferHistory.id.desc()).all()
+
+    return render_template('admin_transfer_requests.html',
+                           pending_transfers=pending_transfers,
+                           history_transfers=history_transfers)
 
 @app.route('/admin/approve_transfer/<int:transfer_id>', methods=['POST'])
 @admin_required
@@ -1050,50 +1057,62 @@ def approve_transfer(transfer_id):
         transfer.status = 'approved'
         transfer.approved_by = current_user.id
         transfer.approval_date = datetime.now(timezone.utc)
-        
+
         # Update the animal's farm and status
         transfer.animal.farm_id = transfer.to_farm_id
-        transfer.animal.status = 'approved'  # This is the key line you're missing
-        transfer.animal.transfer_request = None  # Clear the transfer request
-        
-        # Generate certificate
+        transfer.animal.status = 'approved'
+        transfer.animal.transfer_request = None
+
+        # Generate the certificate buffer
         pdf_buffer = generate_transfer_certificate(transfer)
-        
+
+        # Ensure directory exists
+        cert_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], "certificates")
+        os.makedirs(cert_folder, exist_ok=True)
+
+        # Save to disk and assign path
+        certificate_filename = f"transfer_certificate_{transfer.id}.pdf"
+        certificate_path = os.path.join("certificates", certificate_filename)
+        full_path = os.path.join(current_app.config['UPLOAD_FOLDER'], certificate_path)
+
+        with open(full_path, "wb") as f:
+            f.write(pdf_buffer.getvalue())
+
+        transfer.certificate_path = certificate_path
+
         db.session.commit()
-        
-        # Send PDF as download
-        response = make_response(pdf_buffer.getvalue())
-        response.headers['Content-Type'] = 'application/pdf'
-        response.headers['Content-Disposition'] = \
-            f'attachment; filename=transfer_certificate_{transfer.id}.pdf'
-        return response
-        
+
+        flash(f'Transfer for "{transfer.animal.name}" approved and certificate generated.', 'success')
+        return redirect(url_for('view_transfer_requests'))
+
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Transfer approval failed: {str(e)}")
         flash('Error approving transfer', 'danger')
         return redirect(url_for('view_transfer_requests'))
 
+
 @app.route('/download_certificate/<int:transfer_id>')
 @login_required
 def download_certificate(transfer_id):
     transfer = TransferHistory.query.get_or_404(transfer_id)
-    
+
     if not transfer.certificate_path:
         abort(404, description="Certificate not found")
-    
+
     upload_dir = Path(current_app.config['UPLOAD_FOLDER'])
     cert_path = upload_dir / transfer.certificate_path
-    
+
     if not cert_path.exists():
         abort(404, description="Certificate file missing")
-    
+
     return send_from_directory(
         upload_dir,
         transfer.certificate_path,
         as_attachment=True,
         download_name=f"transfer_certificate_{transfer.id}.pdf"
     )
+
 
 @app.route('/generate_animal_pdf/<int:animal_id>')  # Changed the route pattern
 @admin_required
