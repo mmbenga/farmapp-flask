@@ -501,33 +501,30 @@ def admin_get_animals(farm_id):
         ).mappings().all()  # Returns dictionaries for cleaner access
 
         # Build response data
-        base_url = request.url_root
-        animals_data = []
-        
-        for animal in animals:
-            try:
-                # Construct animal data
-                animal_data = {
-                    'id': animal['animal_id'],
-                    'name': animal['name'],
-                    'type': animal['animal_type'].title(),
-                    'gender': animal['gender'].title(),
-                    'status': animal['status'],
-                    'dob': animal['dob'].isoformat() if animal['dob'] else None,
-                    'details_url': urljoin(base_url, f'/view_animal/{animal["animal_id"]}'),
-                    'photos': [
-                        safe_photo_path = photo_path.replace("\\", "/")
-urljoin(base_url, f'/uploads/{safe_photo_path}')
+base_url = request.url_root
+animals_data = []
 
-
-                        for photo_path in [animal['photo1_path'], animal['photo2_path']]
-                        if photo_path
-                    ]
-                }
-                animals_data.append(animal_data)
-            except Exception as e:
-                app.logger.error(f"Error processing animal {animal.get('animal_id')}: {str(e)}")
-                continue
+for animal in animals:
+    try:
+        # Construct animal data
+        animal_data = {
+            'id': animal['animal_id'],
+            'name': animal['name'],
+            'type': animal['animal_type'].title(),
+            'gender': animal['gender'].title(),
+            'status': animal['status'],
+            'dob': animal['dob'].isoformat() if animal['dob'] else None,
+            'details_url': urljoin(base_url, f'/view_animal/{animal["animal_id"]}'),
+            'photos': [
+                urljoin(base_url, '/uploads/' + photo_path.replace("\\", "/"))
+                for photo_path in [animal['photo1_path'], animal['photo2_path']]
+                if photo_path
+            ]
+        }
+        animals_data.append(animal_data)
+    except Exception as e:
+        app.logger.error(f"Error processing animal {animal.get('animal_id')}: {str(e)}")
+        continue
 
         # Prepare response
         response_data = {
