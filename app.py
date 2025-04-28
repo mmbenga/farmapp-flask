@@ -516,7 +516,7 @@ def admin_get_animals(farm_id):
                     'dob': animal['dob'].isoformat() if animal['dob'] else None,
                     'details_url': urljoin(base_url, f'/view_animal/{animal["animal_id"]}'),
                     'photos': [
-                        urljoin(base_url, f'/uploads/{photo_path.replace("\\", "/")}')
+                        urljoin(base_url, f'/uploads/{photo_path.replace(r"\", "/")}')
                         for photo_path in [animal['photo1_path'], animal['photo2_path']]
                         if photo_path
                     ]
