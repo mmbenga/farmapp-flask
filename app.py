@@ -508,19 +508,21 @@ animals_data = []
 
 for animal in animals:
     try:
-        # Construct animal data
+     # Construct animal data
         animal_data = {
-            'id': animal['animal_id'],
-            'name': animal['name'],
-            'type': animal['animal_type'].title(),
-            'gender': animal['gender'].title(),
-            'status': animal['status'],
-            'dob': animal['dob'].isoformat() if animal['dob'] else None,
-            'details_url': urljoin(base_url, f'/view_animal/{animal["animal_id"]}'),
-            'photos': [
-               urljoin(base_url, f'/uploads/{photo_path.replace("\\\\", "/")}')
-            ]
-        }
+       'id': animal['animal_id'],
+       'name': animal['name'],
+       'type': animal['animal_type'].title(),
+       'gender': animal['gender'].title(),
+       'status': animal['status'],
+       'dob': animal['dob'].isoformat() if animal['dob'] else None,
+       'details_url': urljoin(base_url, f'/view_animal/{animal["animal_id"]}'),
+       'photos': [
+        urljoin(base_url, '/uploads/' + photo_path.replace("\\", "/")) if photo_path else None
+        for photo_path in [animal['photo1_path'], animal['photo2_path']]
+        if photo_path
+    ]
+}
         animals_data.append(animal_data)
     except Exception as e:
         app.logger.error(f"Error processing animal {animal.get('animal_id')}: {str(e)}")
