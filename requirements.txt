@@ -33,5 +33,5 @@ PyMySQL==1.0.2
 reportlab==4.3.1
 SQLAlchemy==2.0.40
 typing_extensions==4.13.0
-Werkzeug==2.3.6
+Werkzeug==3.0.6
 WTForms==3.2.1
