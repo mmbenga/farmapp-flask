@@ -103,7 +103,7 @@ class Farm(db.Model):
     logo_path = db.Column(db.String(255))
     status = db.Column(db.String(20), default='pending', index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    registration_date = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    registration_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     
     # Relationships
