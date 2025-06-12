@@ -387,7 +387,8 @@ def register():
                 location=location,
                 contact_info=contact,
                 logo_path=logo_path,
-                status='pending'
+                status='pending',
+                registration_date=datetime.now(timezone.utc)
             )
             db.session.add(new_farm)
             
@@ -1589,7 +1590,8 @@ def register_animal(farm_id):
                 photo1_path=photo1_path,
                 photo2_path=photo2_path,
                 farm_id=farm.id,
-                status='pending'
+                status='pending',
+                registration_date=datetime.now(timezone.utc)
             )
             
             db.session.add(animal)
