@@ -467,9 +467,9 @@ def admin_get_animals(farm_id):
     - Metadata including count and timestamp
     """
     # Authentication check
-    if not session.get('is_admin'):
+    if not current_user.is_admin:
         app.logger.warning(f"Unauthorized access attempt to farm {farm_id}")
-        abort(403, description="Administrator privileges required")
+        abort(403)
 
     try:
         # Get farm with proper error handling
@@ -485,7 +485,7 @@ def admin_get_animals(farm_id):
         # Efficient animal query with only needed fields
         animals = db.session.execute(
             select(
-                Animal.animal_id,
+                Animal.id,
                 Animal.name,
                 Animal.animal_type,
                 Animal.gender,
@@ -494,9 +494,9 @@ def admin_get_animals(farm_id):
                 Animal.photo1_path,
                 Animal.photo2_path
             ).where(Animal.farm_id == farm_id)
-        ).mappings().all()  # Returns dictionaries for cleaner access
+        ).mappings().all()
 
-        # Build response data
+        # Build response data - now properly within route context
         base_url = request.url_root
         animals_data = []
         
@@ -504,13 +504,13 @@ def admin_get_animals(farm_id):
             try:
                 # Construct animal data
                 animal_data = {
-                    'id': animal['animal_id'],
+                    'id': animal['id'],
                     'name': animal['name'],
                     'type': animal['animal_type'].title(),
                     'gender': animal['gender'].title(),
                     'status': animal['status'],
                     'dob': animal['dob'].isoformat() if animal['dob'] else None,
-                    'details_url': urljoin(base_url, f'/view_animal/{animal["animal_id"]}'),
+                    'details_url': urljoin(base_url, f'/view_animal/{animal["id"]}'),
                     'photos': [
                         urljoin(base_url, f'/uploads/{photo_path.replace("\\", "/")}')
                         for photo_path in [animal['photo1_path'], animal['photo2_path']]
@@ -519,14 +519,14 @@ def admin_get_animals(farm_id):
                 }
                 animals_data.append(animal_data)
             except Exception as e:
-                app.logger.error(f"Error processing animal {animal.get('animal_id')}: {str(e)}")
+                app.logger.error(f"Error processing animal {animal.get('id')}: {str(e)}")
                 continue
 
         # Prepare response
         response_data = {
             'success': True,
             'farm': {
-                'id': farm.farm_id,
+                'id': farm.id,
                 'name': farm.farm_name,
                 'logo': urljoin(base_url, f'/uploads/{farm.logo_path.replace("\\", "/")}') if farm.logo_path else None,
                 'location': farm.location,
@@ -535,7 +535,7 @@ def admin_get_animals(farm_id):
             'animals': animals_data,
             'meta': {
                 'count': len(animals_data),
-                'timestamp': datetime.now(UTC).isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'api_version': '1.2'
             }
         }
@@ -549,6 +549,14 @@ def admin_get_animals(farm_id):
             'success': False,
             'error': 'Database operation failed',
             'code': 'DB_ERROR'
+        }), 500
+
+    except Exception as e:
+        app.logger.error(f"Unexpected error for farm {farm_id}: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error',
+            'code': 'SERVER_ERROR'
         }), 500
 
     except Exception as e:
