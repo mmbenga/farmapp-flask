@@ -8,7 +8,7 @@ from models import User, Farm  # Make sure to import Farm here
 class AnimalRegistrationForm(FlaskForm):
     name = StringField('Animal Name', validators=[DataRequired()])
     animal_type = SelectField('Animal Type', 
-                            choices=[('cattle', 'Cattle'), ('goat', 'Goat'), ('sheep', 'Sheep')],
+                            choices=[('cattle', 'Cattle'), ('goat', 'Goat'), ('sheep', 'Sheep'), ('ladoums', 'Ladoum'), ('chicken', 'Chicken')],
                             validators=[DataRequired()])
     gender = SelectField('Gender', 
                         choices=[('male', 'Male'), ('female', 'Female')],
